@@ -1,3 +1,10 @@
+// External libraries:
+// HX711_Arduino_Library
+
+#include <Ethernet.h>
+#include <EthernetServer.h>
+#include <EthernetClient.h>
+
 #include "modos_debug.h"
 #include "driver_balanca.hpp"
 #include "protocol.hpp"
