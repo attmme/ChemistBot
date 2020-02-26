@@ -10,50 +10,59 @@ Bascula _cmd_balanca;
 
 void comando_init()
 {
-	protocol_init(); // per la modo debug
+	protocol_init();	 // per la modo debug
+	pinMode(13, OUTPUT); // tmp debug
 }
 
 void pooling_comando()
 {
-	if( protocol_new_data() )
+	if (protocol_new_data())
 	{
-		switch( mirar_comando() )
+		switch (mirar_comando())
 		{
-			case COMANDO_SI:
-				comando_si();
+		case COMANDO_SI:
+			comando_si();
 			break;
-			
-			case COMANDO_NO:
-				comando_no();
-			break;			
-			
-			case BALANCA_CALIB:
-				_cmd_balanca.calibrar();
+
+		case COMANDO_NO:
+			comando_no();
 			break;
-			
-			case BALANCA_TARA:
-				_cmd_balanca.tara();
+
+		case BALANCA_CALIB:
+			_cmd_balanca.calibrar();
 			break;
-			
-			case BALANCA_GET_PES:
-				Serial.print("Pes: ");
-				Serial.println(_cmd_balanca.llegir_pes());
+
+		case BALANCA_TARA:
+			_cmd_balanca.tara();
 			break;
-			
-			default:
-				comando_gestionar_errors();
+
+		case BALANCA_GET_PES:
+			Serial.print("Pes: ");
+			Serial.println(_cmd_balanca.llegir_pes());
+			break;
+
+		case COMANDO_LED_ON:
+			digitalWrite(13, HIGH);
+			break;
+
+		case COMANDO_LED_OFF:
+			digitalWrite(13, LOW);
+			break;
+
+		default:
+			comando_gestionar_errors();
 			break;
 		}
-		
+
 		protocol_flush();
 	}
 }
 
 int mirar_comando()
 {
-	for(int i = 0; i < sizeof(buffer_protocol); i++)
+	for (int i = 0; i < sizeof(buffer_protocol); i++)
 	{
-		if( comando[i].equals(buffer_protocol) )
+		if (comando[i].equals(buffer_protocol))
 		{
 			return i;
 		}
@@ -62,11 +71,10 @@ int mirar_comando()
 	return ERROR;
 }
 
-
 // Gestió de comandos del switch d'adalt
 void comando_si()
 {
-	if(_cmd_balanca.calibrant == 1) // Si estem calibrant
+	if (_cmd_balanca.calibrant == 1) // Si estem calibrant
 	{
 		_cmd_balanca.step_calib++;
 		_cmd_balanca.si++;
@@ -80,7 +88,7 @@ void comando_si()
 
 void comando_no()
 {
-	if(_cmd_balanca.calibrant == 1) //  Si estem calibrant
+	if (_cmd_balanca.calibrant == 1) //  Si estem calibrant
 	{
 		_cmd_balanca.step_calib++;
 		_cmd_balanca.no++;
@@ -94,7 +102,7 @@ void comando_no()
 
 void comando_gestionar_errors()
 {
-	if(_cmd_balanca.calibrant == 1) //  Si estem calibrant
+	if (_cmd_balanca.calibrant == 1) //  Si estem calibrant
 	{
 		_cmd_balanca.error_comando();
 	}
@@ -103,4 +111,3 @@ void comando_gestionar_errors()
 		Serial.println(str_err_cmd_not_exists);
 	}
 }
-
