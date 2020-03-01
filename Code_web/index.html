@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Node test 4</title>
+</head>
+
+<body>
+  <h1>Node Test n4</h1>
+<!--
+  <form action="/temp" method="get">
+    <p><label>ID:<input type="text" name="id"></label></p>
+    <input type="submit" value="Enviar la ID">
+  </form>
+-->
+  <button id="botonet">ON/OFF LED</button>
+</body>
+
+
+<script>
+
+  document.getElementById('botonet').onclick = function () {
+
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", "temp?id=333", true); // true for asynchronous 
+    xmlHttp.send(null);
+  };
+
+</script>
+
+
+</html>

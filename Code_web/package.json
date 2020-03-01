@@ -1,0 +1,29 @@
+{
+  "name": "arduino-serial",
+  "version": "0.2.0",
+  "description": "Control arduino using node.js via serial port.",
+  "main": "listPorts.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node listPorts.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/"
+  },
+  "keywords": [
+    "arduino",
+    "serial",
+    "nodejs"
+  ],
+  "author": "Oscar Gomez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/"
+  },
+  "homepage": "https://github.com/",
+  "dependencies": {
+    "express": "^4.17.1",
+    "serialport": "^4.0.7"
+  }
+}
