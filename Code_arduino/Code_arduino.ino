@@ -1,23 +1,33 @@
 // External libraries:
 // HX711_Arduino_Library
 
-#include "modos_debug.h"
-#include "driver_balanca.hpp"
-#include "protocol.hpp"
 #include "comandos.hpp"
+#include "robot.hpp"
 
-Bascula balanca;
+Robot robotet;
 
 void setup()
 {
-	Serial.begin(9600);
+	pinMode(53, INPUT);
+	digitalWrite(53, HIGH);
 
-	protocol_init();
+	Serial.begin(9600);
+	Serial.println("Debug");
+
 	comando_init();
-	balanca.init();
+	robotet.init();
 }
 
 void loop()
 {
+	if (digitalRead(53)) // temporal
+	{
+		Serial.println(1);
+	}
+	else
+	{
+		Serial.println(0);
+	}
+
 	pooling_comando(); // comandos.cpp
 }

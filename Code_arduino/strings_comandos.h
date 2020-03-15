@@ -2,6 +2,17 @@
 #define _strings_comandos_h_
 
 // Defines
+#define COMANDO_SI 0		// El número ha de concidir amb el string comando[]
+#define COMANDO_NO 1
+#define BALANCA_CALIB 2
+#define BALANCA_TARA 3
+#define BALANCA_GET_PES 4
+
+#define COMANDO_LED_ON 5
+#define COMANDO_LED_OFF 6
+
+#define ERROR -1
+
 #define NUM_MAX_COMANDOS 7
 
 // Strings comandos

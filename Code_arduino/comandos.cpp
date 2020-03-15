@@ -1,51 +1,54 @@
-#include "modos_debug.h" // debug
 #include "Arduino.h"
 #include "strings_comandos.h"
-#include "protocol.hpp"
+#include "robot.hpp"
 #include "comandos.hpp"
-#include "driver_balanca.hpp"
 #include <EEPROM.h>
 
-Bascula _cmd_balanca;
+// Variables globals
+char _buffer[MAX_SIZE_BUFFER];
+bool hi_ha_dada = false;
+
+Robot _cmd_balanca;
 
 void comando_init()
 {
-	protocol_init();	 // per la modo debug
+	Serial.begin(_BAUDRATE);
+	Serial.setTimeout(_TEMPS_TIMEOUT);
+
 	pinMode(12, OUTPUT); // tmp debug
 }
 
-void pooling_comando()
+void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
 {
-	if (protocol_new_data())
+	if (comando_new_data())
 	{
 		switch (mirar_comando())
 		{
 		case COMANDO_SI:
-			comando_si();
+			comando_si_no(_cmd_balanca.si);
 			break;
 
 		case COMANDO_NO:
-			comando_no();
+			comando_si_no(_cmd_balanca.no);
 			break;
 
 		case BALANCA_CALIB:
-			_cmd_balanca.calibrar();
+			comando_calibrar();
 			break;
 
 		case BALANCA_TARA:
-			_cmd_balanca.tara();
+			comando_tara();
 			break;
 
 		case BALANCA_GET_PES:
-			Serial.print("Pes: ");
-			Serial.println(_cmd_balanca.llegir_pes());
+			comando_pes();
 			break;
 
-		case COMANDO_LED_ON:
+		case COMANDO_LED_ON: // temporal
 			digitalWrite(12, HIGH);
 			break;
 
-		case COMANDO_LED_OFF:
+		case COMANDO_LED_OFF: // temporal
 			digitalWrite(12, LOW);
 			break;
 
@@ -54,15 +57,15 @@ void pooling_comando()
 			break;
 		}
 
-		protocol_flush();
+		comando_flush();
 	}
 }
 
-int mirar_comando()
+int mirar_comando() // Per a afegir nous comandos, anar a strings_comandos.h
 {
-	for (int i = 0; i < sizeof(buffer_protocol); i++)
+	for (int i = 0; i < sizeof(_buffer); i++)
 	{
-		if (comando[i].equals(buffer_protocol))
+		if (comando[i].equals(_buffer))
 		{
 			return i;
 		}
@@ -71,43 +74,85 @@ int mirar_comando()
 	return ERROR;
 }
 
-// Gestió de comandos del switch d'adalt
-void comando_si()
-{
-	if (_cmd_balanca.calibrant == 1) // Si estem calibrant
-	{
-		_cmd_balanca.step_calib++;
-		_cmd_balanca.si++;
-		_cmd_balanca.calibrar();
-	}
-	else // Si no estem fent cap procés
-	{
-		Serial.println(str_err_cmd_not_exists);
-	}
-}
-
-void comando_no()
-{
-	if (_cmd_balanca.calibrant == 1) //  Si estem calibrant
-	{
-		_cmd_balanca.step_calib++;
-		_cmd_balanca.no++;
-		_cmd_balanca.calibrar();
-	}
-	else // Si no estem fent cap procés
-	{
-		Serial.println(str_err_cmd_not_exists);
-	}
-}
-
 void comando_gestionar_errors()
 {
 	if (_cmd_balanca.calibrant == 1) //  Si estem calibrant
 	{
-		_cmd_balanca.error_comando();
+		print_error_comando();
 	}
 	else // Si no estem fent cap procés
 	{
 		Serial.println(str_err_cmd_not_exists);
 	}
+}
+
+bool comando_new_data()
+{
+	return hi_ha_dada;
+}
+
+void comando_flush()
+{
+	for (int i = 0; i < sizeof(_buffer); i++) // netejem la part del string feta servir
+	{
+		_buffer[i] = 0;
+	}
+
+	hi_ha_dada = false; // no hi ha nova dada
+}
+
+// Comandos fets servir per a la balança / genèrics
+void comando_si_no(bool si_no)
+{
+	if (_cmd_balanca.calibrant == 1) // Si estem calibrant
+	{
+		_cmd_balanca.step_calib++;
+		si_no++;
+		_cmd_balanca.calibrar();
+	}
+	else // Si no estem fent cap procés
+	{
+		Serial.println(str_err_cmd_not_exists);
+	}
+}
+
+void comando_calibrar()
+{
+	_cmd_balanca.calibrar();
+}
+
+void comando_tara()
+{
+	_cmd_balanca.tara();
+}
+
+void comando_pes()
+{
+	Serial.print("Pes: ");
+	Serial.println(_cmd_balanca.llegir_pes());
+}
+
+void print_si_no()
+{
+	if (_cmd_balanca.si)
+	{
+		Serial.println("si\n");
+	}
+	else if (_cmd_balanca.no)
+	{
+		Serial.println("no\n");
+	}
+}
+
+void print_error_comando()
+{
+	Serial.println("No t'entenc, intenta-ho de nou");
+	_cmd_balanca.calibrar();
+}
+
+//IRQ. Quan hi ha una IRQ de nou paquet per la UART, entra aqui i va llegint fins al salt de línia (\n)
+void serialEvent()
+{
+	Serial.readBytesUntil('\n', _buffer, MAX_SIZE_BUFFER);
+	hi_ha_dada = true;
 }

@@ -1,25 +1,29 @@
 #ifndef _comandos_hpp_
 #define _comandos_hpp_
 
-// Han de coincidir amb el:
-// String comando[NUM_MAX_COMANDOS] de strings_comandos.h
-#define COMANDO_SI 0
-#define COMANDO_NO 1
-#define BALANCA_CALIB 2
-#define BALANCA_TARA 3
-#define BALANCA_GET_PES 4
+// Defines
+#define _BAUDRATE 9600
+#define _TEMPS_TIMEOUT 50
+#define MAX_SIZE_BUFFER 128
 
-#define COMANDO_LED_ON  5
-#define COMANDO_LED_OFF  6
-
-#define ERROR -1
+// Variables globals
+extern char _buffer[MAX_SIZE_BUFFER];
 
 // Funcions
 void comando_init();
 void pooling_comando();
 int mirar_comando();
 void comando_gestionar_errors();
-void comando_si();
-void comando_no();
+bool comando_new_data();
+void comando_flush();
+
+// Comandos fets servir per a la balança / genèrics
+void comando_si_no(bool si_no);
+void comando_calibrar();
+void comando_tara();
+void comando_pes();
+
+void print_si_no();
+void print_error_comando();
 
 #endif
