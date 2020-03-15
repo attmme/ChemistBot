@@ -25,11 +25,11 @@ void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
 		switch (mirar_comando())
 		{
 		case COMANDO_SI:
-			comando_si_no(_cmd_balanca.si);
+			comando_si_no(SI);
 			break;
 
 		case COMANDO_NO:
-			comando_si_no(_cmd_balanca.no);
+			comando_si_no(NO);
 			break;
 
 		case BALANCA_CALIB:
@@ -44,13 +44,9 @@ void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
 			comando_pes();
 			break;
 
-		case COMANDO_LED_ON: // temporal
-			digitalWrite(12, HIGH);
-			break;
-
-		case COMANDO_LED_OFF: // temporal
-			digitalWrite(12, LOW);
-			break;
+		case COMANDO_TEMPORAL:
+			_cmd_balanca.variable_temporal = 5;
+		break;
 
 		default:
 			comando_gestionar_errors();
@@ -102,12 +98,13 @@ void comando_flush()
 }
 
 // Comandos fets servir per a la balança / genèrics
-void comando_si_no(bool si_no)
+
+void comando_si_no(int si_no)
 {
 	if (_cmd_balanca.calibrant == 1) // Si estem calibrant
 	{
 		_cmd_balanca.step_calib++;
-		si_no++;
+		si_no ? _cmd_balanca.si++ : _cmd_balanca.no++;
 		_cmd_balanca.calibrar();
 	}
 	else // Si no estem fent cap procés
@@ -123,6 +120,7 @@ void comando_calibrar()
 
 void comando_tara()
 {
+	Serial.println("Tara");
 	_cmd_balanca.tara();
 }
 

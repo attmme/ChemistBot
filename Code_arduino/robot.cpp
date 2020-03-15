@@ -13,6 +13,7 @@ int Robot::step_calib = 0;
 int Robot::si = 0;
 int Robot::no = 0;
 bool Robot::calibrant = false; // quan acaba la calibració, els comandos tornen a funcionar normal
+int Robot::variable_temporal = 0;
 
 // Public
 void Robot::init()
@@ -37,23 +38,30 @@ void Robot::init()
 // Bascula
 float Robot::llegir_pes()
 {
-    if (!bascula.is_ready()) // si no està llesta, retornem 0
-    {
-        return 0;
-    }
+    float pes = 0;
 
-    return (float)bascula.get_units(N_MESURES); // else -> retornem pes
+    if (bascula.is_ready()) // caldrà un bloqueo? fer un flush del buffer?
+    {
+        pes = bascula.get_units(N_MESURES);
+    }
+    else
+    {
+        //Serial.println("HX711 not found.");
+    }
+    return pes;
 }
 
 void Robot::tara()
 {
-    eeprom.llegir(ADDR_CALIBRACIO_BASCULA, calibracio);
+    calibracio = eeprom.llegir(ADDR_CALIBRACIO_BASCULA);
     bascula.set_scale(calibracio);
     bascula.tare();
 }
 
 void Robot::calibrar()
 {
+inici:
+
     switch (this->step_calib)
     {
     case 0:
@@ -71,7 +79,8 @@ void Robot::calibrar()
         }
         else
         {
-            this->calibrar();
+            this->step_calib = 0; // tornem a començar ( no ha tret el pes per a fer la tara )
+            goto inici;
         }
 
         Serial.print("2/2. Posa un pes de 50gr\nEn tens? si : no ==> ");
@@ -102,14 +111,46 @@ void Robot::reiniciar_variables()
 }
 
 // Motor rotor
-
+void Robot::rotar(bool si_no)
+{
+    if (si_no)
+    {
+        analogWrite(MOTOR_ROTOR, MOTOR_ROTOR_PWM_MAXIM);
+    }
+    else
+    {
+        analogWrite(MOTOR_ROTOR, 0);
+    }
+}
 
 // Sensor rotor
+bool Robot::davant_cartutxo()
+{
+    // 0 = on, 1 = off
 
+    if (!digitalRead(PIN_SENSOR_ROTOR)) // sistema anti-rebote
+    {
+        delay(100);
+        if (!digitalRead(PIN_SENSOR_ROTOR))
+        {
+            while (!digitalRead(PIN_SENSOR_ROTOR))
+                ; // fins que no es deixi anar, no pirem
+            return true;
+        }
+    }
 
+    return false;
+}
 
 // Motor dispensador cartutxo
-
-
+void Robot::dosificar_pastilla()
+{
+}
 
 // Sensors cartutxo
+int Robot::llegir_cartutxo()
+{
+    int n_cartutxo = variable_temporal;
+
+    return n_cartutxo;
+}

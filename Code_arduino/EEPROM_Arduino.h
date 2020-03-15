@@ -8,17 +8,19 @@
 
 class EEPROM_ARDUINO
 {
-    public:
-    
-    inline void llegir(int add, float valor)
+public:
+    inline float llegir(int add)
     {
+        float valor = 0;
         EEPROM.get(add, valor);
+        return valor;
     }
 
     inline void escriure(int add, float valor)
     {
+        Serial.print(valor);
         EEPROM.put(add, valor);
-    }   
+    }
 };
 
 #endif

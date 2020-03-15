@@ -5,6 +5,9 @@
 #define _BAUDRATE 9600
 #define _TEMPS_TIMEOUT 50
 #define MAX_SIZE_BUFFER 128
+#define SI 1
+#define NO 0
+
 
 // Variables globals
 extern char _buffer[MAX_SIZE_BUFFER];
@@ -18,7 +21,7 @@ bool comando_new_data();
 void comando_flush();
 
 // Comandos fets servir per a la balança / genèrics
-void comando_si_no(bool si_no);
+void comando_si_no(int si_no);
 void comando_calibrar();
 void comando_tara();
 void comando_pes();
