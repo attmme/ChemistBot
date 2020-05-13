@@ -183,6 +183,7 @@ void comando_dosificar_pastilla()
 			
 			robotet.tambor(DESBLOQ);
 			error = 0;
+			break;
 		}
 		else
 		{
