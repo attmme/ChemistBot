@@ -8,14 +8,17 @@
 char _buffer[MAX_SIZE_BUFFER];
 bool hi_ha_dada = false;
 
-Robot _cmd_balanca;
+int cartutxo = 0;
+int n_pastilles = 0;
 
+Robot robotet;
+
+// Public
 void comando_init()
 {
 	Serial.begin(_BAUDRATE);
 	Serial.setTimeout(_TEMPS_TIMEOUT);
-
-	pinMode(12, OUTPUT); // tmp debug
+	robotet.init();
 }
 
 void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
@@ -44,9 +47,9 @@ void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
 			comando_pes();
 			break;
 
-		case COMANDO_TEMPORAL:
-			_cmd_balanca.variable_temporal = 5;
-		break;
+		case ROBOT_DOSIFICAR:
+			comando_dosificar_pastilla();
+			break;
 
 		default:
 			comando_gestionar_errors();
@@ -57,13 +60,21 @@ void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
 	}
 }
 
+// Private
 int mirar_comando() // Per a afegir nous comandos, anar a strings_comandos.h
 {
-	for (int i = 0; i < sizeof(_buffer); i++)
+	for (int i = 0; i < NUM_MAX_COMANDOS; i++)
 	{
-		if (comando[i].equals(_buffer))
+		if (comando[i].equals(_buffer)) // comandos sense paràmetres
 		{
 			return i;
+		}
+		else if (strstr(_buffer, comando[ROBOT_DOSIFICAR].c_str()) != NULL) // if comando dosificar
+		{
+			cartutxo = get_numero(_buffer, NUM_CARTUTXO);
+			n_pastilles = get_numero(_buffer, NUM_PASTILLES);
+
+			return ROBOT_DOSIFICAR;
 		}
 	}
 
@@ -72,7 +83,7 @@ int mirar_comando() // Per a afegir nous comandos, anar a strings_comandos.h
 
 void comando_gestionar_errors()
 {
-	if (_cmd_balanca.calibrant == 1) //  Si estem calibrant
+	if (robotet.calibrant == 1) //  Si estem calibrant
 	{
 		print_error_comando();
 	}
@@ -98,14 +109,13 @@ void comando_flush()
 }
 
 // Comandos fets servir per a la balança / genèrics
-
 void comando_si_no(int si_no)
 {
-	if (_cmd_balanca.calibrant == 1) // Si estem calibrant
+	if (robotet.calibrant == 1) // Si estem calibrant
 	{
-		_cmd_balanca.step_calib++;
-		si_no ? _cmd_balanca.si++ : _cmd_balanca.no++;
-		_cmd_balanca.calibrar();
+		robotet.step_calib++;
+		si_no ? robotet.si++ : robotet.no++;
+		robotet.calibrar();
 	}
 	else // Si no estem fent cap procés
 	{
@@ -115,37 +125,100 @@ void comando_si_no(int si_no)
 
 void comando_calibrar()
 {
-	_cmd_balanca.calibrar();
+	robotet.calibrar();
 }
 
 void comando_tara()
 {
-	Serial.println("Tara");
-	_cmd_balanca.tara();
+	Serial.println("Info: Tara");
+	robotet.tara();
 }
 
 void comando_pes()
 {
-	Serial.print("Pes: ");
-	Serial.println(_cmd_balanca.llegir_pes());
+	Serial.print("Info: Pes: ");
+	Serial.println(robotet.llegir_pes());
 }
 
 void print_si_no()
 {
-	if (_cmd_balanca.si)
+	if (robotet.si)
 	{
-		Serial.println("si\n");
+		Serial.println("Info: si\n");
 	}
-	else if (_cmd_balanca.no)
+	else if (robotet.no)
 	{
-		Serial.println("no\n");
+		Serial.println("Info: no\n");
 	}
 }
 
 void print_error_comando()
 {
-	Serial.println("No t'entenc, intenta-ho de nou");
-	_cmd_balanca.calibrar();
+	Serial.println("Error: No t'entenc, intenta-ho de nou");
+	robotet.calibrar();
+}
+
+void comando_dosificar_pastilla()
+{
+	int error = 1;
+
+	robotet.girar(true);
+
+	for (int i = 0; i < 7; i++)
+	{
+		while (!robotet.davant_cartutxo())
+			;
+
+		robotet.girar(false);
+		robotet.tambor(BLOQ);
+
+		if (robotet.llegir_cartutxo() == cartutxo)
+		{
+			Serial.println("Debug: Cartutxo trovat, dosificar");
+
+			for (int j = 0; j < n_pastilles; j++)
+			{
+				robotet.dosificar_pastilla();
+			}
+			
+			robotet.tambor(DESBLOQ);
+			error = 0;
+		}
+		else
+		{
+			robotet.tambor(DESBLOQ);
+			robotet.girar(true);
+		}
+	}
+
+	robotet.girar(false);
+
+	if (error == 1)
+	{
+		Serial.println("Error: s'han mirat tots els cartutxos, no existeix");
+	}
+}
+
+// altres
+int get_numero(String text, int n)
+{
+	int y = 0;
+	String arr_numeros[2];
+	int numeros[2];
+
+	String tmp = text.substring(comando[ROBOT_DOSIFICAR].length() + 1, text.length());
+
+	for (int x = 0; x < tmp.length(); x++)
+	{
+		if (tmp[x] == ' ')
+		{
+			y++;
+			continue;
+		}
+		arr_numeros[y].concat(tmp[x]);
+	}
+
+	return arr_numeros[n].toInt();
 }
 
 //IRQ. Quan hi ha una IRQ de nou paquet per la UART, entra aqui i va llegint fins al salt de línia (\n)
