@@ -8,9 +8,15 @@
 #define SI 1
 #define NO 0
 
+#define NUM_CARTUTXO 0
+#define NUM_PASTILLES 1
 
 // Variables globals
 extern char _buffer[MAX_SIZE_BUFFER];
+extern bool hi_ha_dada;
+
+extern int cartutxo;
+extern int n_pastilles;
 
 // Funcions
 void comando_init();
@@ -28,5 +34,9 @@ void comando_pes();
 
 void print_si_no();
 void print_error_comando();
+
+void comando_dosificar_pastilla();
+
+int get_numero(String text, int n);
 
 #endif
