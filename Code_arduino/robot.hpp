@@ -9,8 +9,8 @@
 
 #define MOTOR_ROTOR_PWM_MAXIM 50
 
-#define MIN_SERVO_LECTOR 0
-#define MAX_SERVO_LECTOR 45
+#define MIN_SERVO_LECTOR 5
+#define MAX_SERVO_LECTOR 50 //45
 
 #define MIN_SERVO_PASTILLA 10 // dispensador pastilla
 #define MAX_SERVO_PASTILLA 174
