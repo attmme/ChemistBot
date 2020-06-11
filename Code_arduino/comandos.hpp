@@ -18,6 +18,12 @@ extern bool hi_ha_dada;
 extern int cartutxo;
 extern int n_pastilles;
 
+extern int n_cartutxos;
+extern int cartutxos[6];
+extern int pastilles[6];
+
+extern String buffer_params_cartutxos;
+
 // Funcions
 void comando_init();
 void pooling_comando();
@@ -37,6 +43,11 @@ void print_error_comando();
 
 void comando_dosificar_pastilla();
 
+int _dosifica(int n_cops);
+void _gestio_errors(int error);
+int comando_llegir_cartutxo();
+
 int get_numero(String text, int n);
+void get_valors_cartutxos(String t_buffer);
 
 #endif

@@ -5,12 +5,15 @@
 #include "EEPROM_Arduino.h" // aqui estan les direccions de memòria
 #include "comandos.hpp"
 #include "Servo.h"
+#include "Musica.hpp"
 
 HX711 bascula; // HX711 = ADC que es fa servir per a llegir la balança
 Servo servo_lector;
 Servo servo_pastilla;
 
+// Objectes
 EEPROM_ARDUINO eeprom;
+Musica musica;
 
 // estàtiques
 int Robot::step_calib = 0;
@@ -42,12 +45,9 @@ void Robot::init()
     servo_lector.write(MIN_SERVO_LECTOR);
 
     // Sensors
-    pinMode(SENSOR_0, INPUT);
-    pinMode(SENSOR_1, INPUT);
-    pinMode(SENSOR_2, INPUT);
-    digitalWrite(SENSOR_0, INPUT_PULLUP); // pull-up = actiu ( estalviem una R )
-    digitalWrite(SENSOR_1, INPUT_PULLUP);
-    digitalWrite(SENSOR_2, INPUT_PULLUP);
+    pinMode(EMISOR, OUTPUT);
+    digitalWrite(EMISOR, LOW);
+    // els pins analògics no calen
 
     // Bloqueig rotor
     pinMode(SENSOR_FINAL, INPUT);
@@ -59,6 +59,9 @@ void Robot::init()
     pinMode(CONTROL_B, OUTPUT);
     digitalWrite(CONTROL_A, LOW);
     digitalWrite(CONTROL_B, LOW);
+
+    // zumbador
+    musica.init();
 }
 
 // Bascula
@@ -141,12 +144,22 @@ void Robot::girar(bool si_no)
 {
     if (si_no)
     {
+        tambor(DESBLOQ);
         analogWrite(MOTOR_ROTOR, MOTOR_ROTOR_PWM_MAXIM);
     }
     else
     {
         analogWrite(MOTOR_ROTOR, 0);
+        tambor(BLOQ);
     }
+}
+
+void Robot::girar_un()
+{
+    girar(true);
+    while (!davant_cartutxo())
+        ;
+    girar(false);
 }
 
 // Sensor rotor
@@ -183,14 +196,21 @@ void Robot::dosificar_pastilla()
 // Sensors cartutxo
 int Robot::llegir_cartutxo()
 {
+    digitalWrite(EMISOR, HIGH); // encenem emisor led
+
     servo_lector.write(MAX_SERVO_LECTOR); // encaixem lector
 
     delay(TEMPS_ESPERA_LECTURA); // cal un temps desde que li dius que mogui el lector fins que ho fa
 
-    int n_cartutxo = ((digitalRead(SENSOR_2) << 2) | (digitalRead(SENSOR_1) << 1) | (digitalRead(SENSOR_0) << 0));
+    int s0 = (analogRead(SENSOR_0) < MIN_VALOR_SENSOR ? 0 : 1);
+    int s1 = (analogRead(SENSOR_1) < MIN_VALOR_SENSOR ? 0 : 1);
+    int s2 = (analogRead(SENSOR_2) < MIN_VALOR_SENSOR ? 0 : 1);
+
+    int n_cartutxo = ((s2 << 2) | (s1 << 1) | (s0 << 0));
 
     servo_lector.write(MIN_SERVO_LECTOR); // retirem lector
 
+    digitalWrite(EMISOR, LOW); // apaguem emisor led
     return n_cartutxo;
 }
 

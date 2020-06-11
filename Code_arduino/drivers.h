@@ -17,10 +17,14 @@
 #define PIN_DISPENSADOR 6
 #define PIN_LECTOR 8
 
-// Sensors cartutxo  ( P7, P8)
-#define SENSOR_0 48 // P7
-#define SENSOR_1 49 // P7
-#define SENSOR_2 47 // P8
+// Sensors cartutxo  ( P3, P4)
+#define SENSOR_0 A5 // P3 ( blanc )
+#define SENSOR_1 A4 // P3 ( verd )
+#define SENSOR_2 A6 // P3 ( lila )
+#define EMISOR 43   // P4 ( vermell )
+
+//Zumbador
+#define BUZZER 46 // P8
 
 // Bloqueig/desbloqueig
 #define SENSOR_INICI 53 // P1
