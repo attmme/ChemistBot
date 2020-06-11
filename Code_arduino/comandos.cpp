@@ -3,15 +3,19 @@
 #include "robot.hpp"
 #include "comandos.hpp"
 #include <EEPROM.h>
+#include "Musica.hpp"
 
 // Variables globals
 char _buffer[MAX_SIZE_BUFFER];
 bool hi_ha_dada = false;
 
-int cartutxo = 0;
-int n_pastilles = 0;
+int n_cartutxos;
+int cartutxos[6];
+int pastilles[6];
 
+String buffer_params_cartutxos;
 Robot robotet;
+Musica _musica;
 
 // Public
 void comando_init()
@@ -19,6 +23,8 @@ void comando_init()
 	Serial.begin(_BAUDRATE);
 	Serial.setTimeout(_TEMPS_TIMEOUT);
 	robotet.init();
+	robotet.tambor(DESBLOQ);
+	_musica.init();
 }
 
 void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
@@ -48,7 +54,21 @@ void pooling_comando() // switch on es mira quin comando és el que s'ha rebut
 			break;
 
 		case ROBOT_DOSIFICAR:
+			get_valors_cartutxos(buffer_params_cartutxos);
 			comando_dosificar_pastilla();
+			break;
+
+		case ROBOT_LLEGIR:
+			Serial.print("Nº cartutxo: ");
+			Serial.println(comando_llegir_cartutxo(), DEC);
+			break;
+
+		case SO_OK:
+			_musica.reproduir(MUSIC_UP);
+			break;
+
+		case SO_ERROR:
+			_musica.reproduir(MUSIC_ERROR);
 			break;
 
 		default:
@@ -71,9 +91,7 @@ int mirar_comando() // Per a afegir nous comandos, anar a strings_comandos.h
 		}
 		else if (strstr(_buffer, comando[ROBOT_DOSIFICAR].c_str()) != NULL) // if comando dosificar
 		{
-			cartutxo = get_numero(_buffer, NUM_CARTUTXO);
-			n_pastilles = get_numero(_buffer, NUM_PASTILLES);
-
+			buffer_params_cartutxos = _buffer;
 			return ROBOT_DOSIFICAR;
 		}
 	}
@@ -158,46 +176,99 @@ void print_error_comando()
 	robotet.calibrar();
 }
 
-void comando_dosificar_pastilla()
+void comando_dosificar_pastilla() // array nº cartutxos + nº pastilles
 {
+	robotet.tambor(BLOQ);
 	int error = 1;
 
-	robotet.girar(true);
-
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < n_cartutxos; i++) // per cada cartutxo, donaràs una volta completa al tambor
 	{
-		while (!robotet.davant_cartutxo())
-			;
+		error = 1;
+		Serial.print("Buscant cartutxo: ");
+		Serial.println(cartutxos[i]);
 
-		robotet.girar(false);
-		robotet.tambor(BLOQ);
-
-		if (robotet.llegir_cartutxo() == cartutxo)
+		for (int j = 0; j < 7; j++)
 		{
-			Serial.println("Debug: Cartutxo trovat, dosificar");
-
-			for (int j = 0; j < n_pastilles; j++)
+			if (cartutxos[i] == robotet.llegir_cartutxo())
 			{
-				robotet.dosificar_pastilla();
+				Serial.println("Debug: Cartutxo trovat, dosificar");
+				robotet.tara();
+				error = _dosifica(pastilles[i]);
+
+				if (error == 0)
+				{
+					j = 7; // pirem d'una forma molt elegant per a menjar-nos el girar_un d'abaix
+
+					if( i == n_cartutxos-1 ) // si és l'últim cas, no volem el girar 1, pirem
+					{
+						break;
+					}
+				}
+				else // error
+				{
+					i = 255; // sortim dels 2 bucles d'un plumazo
+					break;
+				}
 			}
-			
-			robotet.tambor(DESBLOQ);
-			error = 0;
-			break;
-		}
-		else
-		{
-			robotet.tambor(DESBLOQ);
-			robotet.girar(true);
+			robotet.girar_un(); // gira 1 posició
 		}
 	}
 
 	robotet.girar(false);
+	robotet.tambor(DESBLOQ);
+	_gestio_errors(error);
+}
 
+int _dosifica(int n_cops)
+{
+	int error = 1;
+
+	for (int i = 0; i < n_cops; i++) // dosificar
+	{
+		for (int j = 0; j < 2; j++) // intentar x cops
+		{
+			robotet.dosificar_pastilla();
+			float pes_nou = robotet.llegir_pes();
+			Serial.print("Debug: pes pasti");
+			Serial.println(pes_nou);
+
+			if (pes_nou < 0.15f) // no ha caigut pastilla, intentarem 1 cop
+			{
+				Serial.println("Error: no ha caigut pastilla!");
+				error = 1;
+			}
+			else // tot bé, ha caigut
+			{
+				Serial.println("Debug: tot be, anem a pel pròxim cartutxo");
+				error = 0;
+				break;
+			}
+		}
+	}
+
+	return error;
+}
+
+void _gestio_errors(int error)
+{
 	if (error == 1)
 	{
 		Serial.println("Error: s'han mirat tots els cartutxos, no existeix");
+		_musica.reproduir(MUSIC_ERROR);
 	}
+	else
+	{
+		Serial.println("Debug: music up");
+		_musica.reproduir(MUSIC_UP);
+	}
+}
+
+int comando_llegir_cartutxo()
+{
+	int n = 0;
+	robotet.girar(false);
+	n = robotet.llegir_cartutxo();
+	return n;
 }
 
 // altres
@@ -220,6 +291,21 @@ int get_numero(String text, int n)
 	}
 
 	return arr_numeros[n].toInt();
+}
+
+void get_valors_cartutxos(String t_buffer)
+{
+	n_cartutxos = ((t_buffer.length() - 9) / 4);
+
+	int j = 0;
+	for (int i = 10; i < t_buffer.length(); i += 4)
+	{
+		cartutxos[j] = _buffer[i] - 48, DEC;
+		pastilles[j] = _buffer[i + 2] - 48, DEC;
+		j++;
+	}
+
+	cartutxos[j] = 7;
 }
 
 //IRQ. Quan hi ha una IRQ de nou paquet per la UART, entra aqui i va llegint fins al salt de línia (\n)

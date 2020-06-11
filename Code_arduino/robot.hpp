@@ -9,13 +9,15 @@
 
 #define MOTOR_ROTOR_PWM_MAXIM 50
 
-#define MIN_SERVO_LECTOR 5
-#define MAX_SERVO_LECTOR 50 //45
+#define MIN_SERVO_LECTOR 0
+#define MAX_SERVO_LECTOR 55 //45
 
-#define MIN_SERVO_PASTILLA 10 // dispensador pastilla
-#define MAX_SERVO_PASTILLA 174
+#define MIN_SERVO_PASTILLA 0 // dispensador pastilla
+#define MAX_SERVO_PASTILLA 128
 
-#define TEMPS_ESPERA_LECTURA 300
+#define TEMPS_ESPERA_LECTURA 400
+
+#define MIN_VALOR_SENSOR 1000 // és el que decideix quan el valor analògic val 0 o 1
 
 // Bloqueig motor
 #define STOP 0
@@ -39,6 +41,7 @@ public:
 
 	// Motor rotor
 	void girar(bool si_no);
+	void girar_un();
 
 	// Sensor rotor
 	bool davant_cartutxo();

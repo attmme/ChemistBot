@@ -9,8 +9,11 @@
 #define BALANCA_TARA 3
 #define BALANCA_GET_PES 4
 #define	ROBOT_DOSIFICAR 5
+#define	ROBOT_LLEGIR 6
+#define SO_OK 7
+#define SO_ERROR 8
 
-#define NUM_MAX_COMANDOS 6
+#define NUM_MAX_COMANDOS 9
 
 // Tipus de missatges per la terminal:
 //"Debug: "
@@ -26,6 +29,9 @@ String comando[NUM_MAX_COMANDOS] =
 		"tara",		// i = 3
 		"pes",		// i = 4
 		"dosificar", // i = 5
+		"llegir", // i = 6
+		"so_ok", // i = 7
+		"so_error", // i = 8
 };
 
 // Strings d'errors
