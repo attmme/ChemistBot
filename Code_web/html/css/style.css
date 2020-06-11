@@ -1,0 +1,136 @@
+/* Individuals */
+#dia_setmana {
+    width: 160px;
+}
+
+#horaris {
+	font-size: 140%;
+}
+
+#horaris td {
+	padding: 10px;	
+}
+
+#logout {
+	margin-top: 50px;	
+}
+
+/* General */
+h2 {
+	margin-top: 15px;
+}
+
+nav, h2 {
+	font-size: 180%;
+	color: black;
+}
+
+input, select, p {
+	font-size: 140%;
+	color: black;
+}
+
+p {
+    font-weight:bold;
+}
+
+body {
+	background:#e4e6e8;
+}
+
+table td {
+	vertical-align: top;
+}
+
+select {
+    width: 800px;
+}
+
+.parell {
+	background: #f0f9ff;
+}
+
+.imparell {
+	background: #e1effa;
+}
+
+.actual {
+	background-color:#3669a3;	
+}
+
+nav {
+	background: #528fd5;
+	margin-top: 10px;
+	position: relative;
+}
+
+nav ul {
+	list-style:none;
+	padding:0;
+	margin:0;
+	overflow:hidden;
+}
+
+nav > ul > li {
+	float:left;
+}
+
+nav ul li a {
+	display:block;
+	text-decoration:none;
+	color:#fff;
+	padding:10px 20px;
+}
+
+nav ul li a:hover {
+	background:#3669a3;
+}
+
+/* Login */
+#formulari {
+	text-align: center;
+	position: relative;
+	box-shadow:0 0 10px #4e707c;
+	border:8px solid #eee;
+	padding: 10px;
+	width:300px;
+	margin:15% auto;
+	background: #FFFFFF;
+	border: 1px;
+}
+
+#login_pic {
+	max-width: 150px;
+	padding-bottom: 20px;
+}
+
+#formulari table {
+	text-align: center;
+	padding-top: 10px;
+}
+
+#formulari input {
+	width: 100%;	
+}
+
+#formulari tr > td {
+	padding-bottom: 10px;
+}
+
+#login_inp {
+     font-weight: bold;
+}
+
+.login {
+	font-family: Stencil Std, fantasy;
+	cursor:pointer;
+	padding-top: 10px;
+	padding: 2px;
+	width: 100px;
+}
+
+.enviar:hover {
+    padding: 2px;
+    width: 100px;
+    background-color:#C7C7C7;
+}
